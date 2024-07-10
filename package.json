@@ -9,7 +9,7 @@
   "dependencies": {
     "rawrlink": "^1.0.6"
   },
-  "name": "lavaforge",
+  "name": "@econome/lavaforge",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
