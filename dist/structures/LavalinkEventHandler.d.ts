@@ -1,5 +1,5 @@
 import { BaseEventHandler, ForgeClient } from "@tryforge/forgescript";
-import { LavalinkManagerEvents } from "rawrlink/dist/typings/types/LavalinkManagerEvents";
+import { LavalinkManagerEvents } from "lavaclient";
 export type LavalinkEvents = {
     [P in keyof LavalinkManagerEvents]: Parameters<LavalinkManagerEvents[P]>;
 };

@@ -7,7 +7,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "rawrlink": "^1.0.6"
+    "lavaclient": "^3.0.0"
   },
   "name": "@econome/lavaforge",
   "version": "1.0.0",

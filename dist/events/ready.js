@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const LavalinkOpCodes_1 = require("rawrlink/dist/typings/enums/LavalinkOpCodes");
+const lavaclient_1 = require("lavaclient");
 const LavalinkEventHandler_1 = require("../structures/LavalinkEventHandler");
 const __1 = require("..");
 const forgescript_1 = require("@tryforge/forgescript");
 exports.default = new LavalinkEventHandler_1.LavalinkEventHandler({
-    name: LavalinkOpCodes_1.LavalinkOpCodes.Ready,
+    name: lavaclient_1.LavalinkOpCodes.READY,
     description: "Emitted when a lavalink node becomes operational",
     listener(node, data) {
-        const commands = __1.LavaForge.Instance.commands.get(LavalinkOpCodes_1.LavalinkOpCodes.Ready);
+        const commands = __1.LavaForge.Instance.commands.get(lavaclient_1.LavalinkOpCodes.READY);
         if (commands?.length) {
             for (const cmd of commands) {
                 forgescript_1.Interpreter.run({

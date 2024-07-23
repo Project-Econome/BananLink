@@ -1,8 +1,6 @@
 import { EventManager, ForgeClient, ForgeExtension, FunctionManager } from "@tryforge/forgescript";
-import { NekoLavalinkManager } from "rawrlink"
-import { LavalinkOpCodes } from "rawrlink/dist/typings/enums/LavalinkOpCodes";
-import { ILavalinkNodeData } from "rawrlink/dist/typings/interfaces/ILavalinkNodeData";
-import { VoiceStateUpdateHandle } from "rawrlink/dist/typings/types/VoiceStateUpdateHandle";
+import { Lavaclient, LavalinkNode } from "lavaclient";
+import { LavalinkOpCodes } from "lavaclient";
 import { LavalinkCommandManager } from "./structures/LavalinkCommandManager";
 
 export interface ILavalinkCommand {
@@ -10,56 +8,56 @@ export interface ILavalinkCommand {
     code: string
 }
 
-export const LavalinkEventStorage = "lavalink"
+export const LavalinkEventStorage = "lavalink";
 
 export interface ILavaForgeOptions {
-    clientId: string
-    nodes: ILavalinkNodeData[]
-    events?: LavalinkOpCodes[]
+    clientId: string;
+    nodes: LavalinkNode[];
+    events?: LavalinkOpCodes[];
 }
 
 export class LavaForge extends ForgeExtension {
-    public static Instance: LavaForge
+    public static Instance: LavaForge;
     
-    name: string = "LavaForge"
-    description: string = "Very efficient lavalink wrapper for forge"
-    version: string = "1.0.0"
+    name: string = "LavaForge";
+    description: string = "Very efficient lavalink wrapper for forge";
+    version: string = "1.0.0";
 
-    public commands!: LavalinkCommandManager
-    public client!: ForgeClient
-    public manager!: NekoLavalinkManager
+    public commands!: LavalinkCommandManager;
+    public client!: ForgeClient;
+    public manager!: Lavaclient;
 
     public constructor(public readonly options: ILavaForgeOptions) {
-        super()
+        super();
     }
 
     init(client: ForgeClient): void {
-        this.commands = new LavalinkCommandManager(client)
+        this.commands = new LavalinkCommandManager(client);
 
         // Load events
-        EventManager.load(LavalinkEventStorage, `${__dirname}/events`)
+        EventManager.load(LavalinkEventStorage, `${__dirname}/events`);
         
         // Load functions
-        FunctionManager.load(`${__dirname}/functions`)
+        FunctionManager.load(`${__dirname}/functions`);
 
         // Convenience
-        this.client = client
-        this.manager = new NekoLavalinkManager(this.options.clientId, this.voiceUpdateHandler.bind(this), undefined, this.options.nodes)
+        this.client = client;
+        this.manager = new Lavaclient(this.options.clientId, this.options.nodes);
         
-        client.lavalink = this
-        LavaForge.Instance = this
-        
-        // Load events specified in client options
-        client.events.load(LavalinkEventStorage, ...(this.options.events ?? []))
+        client.lavalink = this;
+        LavaForge.Instance = this;
 
-        // @ts-ignore
-        client.on('raw', d => LavaForge.Instance.manager.updateVoiceData(d))
+        // Load events specified in client options
+        client.events.load(LavalinkEventStorage, ...(this.options.events ?? []));
+
+        // Register Lavaclient event handler
+        this.manager.on('raw', (d) => LavaForge.Instance.manager.updateVoiceData(d));
 
         // Connect lavalink nodes
-        this.manager.connect()
+        this.manager.connect();
     }
 
-    private voiceUpdateHandler(...[guildId, packet]: Parameters<VoiceStateUpdateHandle>) {
-        this.client.guilds.cache.get(guildId)?.shard.send(packet)
+    private voiceUpdateHandler(guildId: string, packet: any) {
+        this.client.guilds.cache.get(guildId)?.shard.send(packet);
     }
 }

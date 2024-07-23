@@ -2,22 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const forgescript_1 = require("@tryforge/forgescript");
 const __1 = require("..");
-const rawrlink_1 = require("rawrlink");
+const lavaclient_1 = require("lavaclient");
 exports.default = new forgescript_1.NativeFunction({
     name: "$lavalinkPlay",
     brackets: true,
-    description: "Plays given song url, will return true if playing now, or false if somethings already playing, if empty response there was an error.",
+    description: "Plays given song URL. Returns true if playing now, or false if something is already playing. If empty response, there was an error.",
     unwrap: true,
     args: [
         {
-            name: "guild",
+            name: "guild ID",
             description: "The guild to play this song on",
             rest: false,
             required: true,
             type: forgescript_1.ArgType.Guild
         },
         {
-            name: "channel",
+            name: "channel ID",
             description: "The channel to play this song on",
             rest: false,
             type: forgescript_1.ArgType.Channel,
@@ -31,28 +31,35 @@ exports.default = new forgescript_1.NativeFunction({
             type: forgescript_1.ArgType.Number
         },
         {
-            name: "deaf",
+            name: "self deaf",
             description: "Whether to join deafened",
             rest: false,
             type: forgescript_1.ArgType.Boolean
         }
     ],
-    async execute(ctx, [guild, channel, index, deaf]) {
-        const node = __1.LavaForge.Instance.manager.getLeastUsedNode();
-        if (!node)
-            return this.success();
-        const tracks = Reflect.get(ctx, "tracks");
-        const track = tracks?.[index];
-        if ((index !== null && !track) || !tracks?.length)
-            return this.success();
-        const pl = __1.LavaForge.Instance.manager.player(node, guild.id);
-        await pl.join(channel.id, deaf || false);
-        const queue = (pl.queue ??= new rawrlink_1.NekoLavalinkPlayerQueue(pl));
-        if (track)
-            queue.push(track);
-        else
-            queue.push(...tracks);
-        return this.success(await queue.play());
+    async execute(ctx, [guild, voice, index, deaf]) {
+        try {
+            const node = __1.LavaForge.Instance.manager.getLeastUsedNode();
+            if (!node)
+                return this.success(false);
+            const tracks = Reflect.get(ctx, "tracks");
+            const track = tracks?.[index];
+            if ((index !== null && !track) || !tracks?.length)
+                return this.success(false);
+            const player = __1.LavaForge.Instance.manager.player(node, guild.id);
+            await player.join(voice.id, deaf || false);
+            const queue = (player.queue ??= new lavaclient_1.LavaclientPlayerQueue(player));
+            if (track)
+                queue.push(track);
+            else
+                queue.push(...tracks);
+            const result = await queue.play();
+            return this.success(result);
+        }
+        catch (error) {
+            console.error('Error executing $lavalinkPlay:', error);
+            return this.success(false);
+        }
     },
 });
 //# sourceMappingURL=lavalinkPlay.js.map

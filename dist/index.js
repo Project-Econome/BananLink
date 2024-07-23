@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LavaForge = exports.LavalinkEventStorage = void 0;
 const forgescript_1 = require("@tryforge/forgescript");
-const rawrlink_1 = require("rawrlink");
+const lavaclient_1 = require("lavaclient");
 const LavalinkCommandManager_1 = require("./structures/LavalinkCommandManager");
 exports.LavalinkEventStorage = "lavalink";
 class LavaForge extends forgescript_1.ForgeExtension {
@@ -26,17 +26,17 @@ class LavaForge extends forgescript_1.ForgeExtension {
         forgescript_1.FunctionManager.load(`${__dirname}/functions`);
         // Convenience
         this.client = client;
-        this.manager = new rawrlink_1.NekoLavalinkManager(this.options.clientId, this.voiceUpdateHandler.bind(this), undefined, this.options.nodes);
+        this.manager = new lavaclient_1.Lavaclient(this.options.clientId, this.options.nodes);
         client.lavalink = this;
         LavaForge.Instance = this;
         // Load events specified in client options
         client.events.load(exports.LavalinkEventStorage, ...(this.options.events ?? []));
-        // @ts-ignore
-        client.on('raw', d => LavaForge.Instance.manager.updateVoiceData(d));
+        // Register Lavaclient event handler
+        this.manager.on('raw', (d) => LavaForge.Instance.manager.updateVoiceData(d));
         // Connect lavalink nodes
         this.manager.connect();
     }
-    voiceUpdateHandler(...[guildId, packet]) {
+    voiceUpdateHandler(guildId, packet) {
         this.client.guilds.cache.get(guildId)?.shard.send(packet);
     }
 }
